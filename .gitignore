@@ -1,0 +1,14 @@
+# 不提交 Jupyter 的缓存
+.ipynb_checkpoints/
+
+# 不提交系统文件
+.DS_Store
+
+# 不提交模型文件
+*.pkl
+*.joblib
+
+# 不提交虚拟环境
+venv/
+.env/
+__pycache__/
