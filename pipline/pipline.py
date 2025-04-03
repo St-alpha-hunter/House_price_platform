@@ -264,7 +264,7 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
 
 #step14--处理Ownership
     features = [
-        'Price (in rupees)', 'Carpet Area', 'col_facing_score', 'location_encoded',
+        'Carpet Area', 'col_facing_score', 'location_encoded',
         'floor_level', 'max_floor', 'is_ground', 'is_resale',
         'is_gated', 'has_amenities', 'has_green_space'
     ]
