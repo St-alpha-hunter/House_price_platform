@@ -302,7 +302,7 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
     # 构造训练和测试集（仅对 ownership_score 是缺失的行进行预测）
     train_data = df[df['ownership_score'].notna()]
     test_data = df[df['ownership_score'].isna()]
-    # 注意：features 应该在 pipeline 外部传入或你提前在函数中定义好
+    # 注意：feature 应该在 pipeline 外部传入或你提前在函数中定义好
     X_train = train_data[features]
     y_train = train_data[col_Ownership]
     X_test = test_data[features]
@@ -349,6 +349,18 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
 
 #step-16删除完全空缺值, 辅助列
     df = df.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
-    
+
+# 统一对所有分类列进行编码处理
+    categorical_cols = ['Status', 'Transaction', 'Furnishing']
+    for col in categorical_cols:
+        df[col] = df[col].astype('category').cat.codes
+
+# ⭐ 新增：统一处理其他可能的字符串列
+    remaining_str_cols = df.select_dtypes(include=['object']).columns.tolist()
+    for col in remaining_str_cols:
+        df[col] = df[col].astype('category').cat.codes
+
+# ✅ 统一填充所有NaN，推荐使用中位数填充
+    df = df.fillna(df.median(numeric_only=True))
 
     return df
