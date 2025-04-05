@@ -14,4 +14,4 @@ venv/
 __pycache__/
 
 
-data/house_prices.csv
+data/raw_data/house_prices.csv
