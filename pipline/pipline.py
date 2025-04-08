@@ -231,13 +231,16 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
     col_Bathroom_score = []
     for i in df[col_Bathroom]:
         try:
-            x = float(i)
-            if x <= 1: 
-                x = 1
-            elif x == 2: x = 2
-            elif x == 3: x = 3
-            elif x == 4 or x == 5: x = 4
-            else: x == 5
+            if pd.isna(i):
+                x = 5  # 或你想填的缺失默认值
+            else:
+                x = float(i)
+                if x <= 1: 
+                    x = 1
+                elif x == 2: x = 2
+                elif x == 3: x = 3
+                elif x == 4 or x == 5: x = 4
+                else: x == 5
         except:
             x = 5
         col_Bathroom_score.append(x)
@@ -348,7 +351,7 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
     
 
 #step-16删除完全空缺值, 辅助列
-    df = df.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
+    df_cleaned = df.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
     
 
-    return df
+    return df_cleaned
