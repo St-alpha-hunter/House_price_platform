@@ -41,7 +41,7 @@ df_cleaned_features = add_selected_features(df_cleaned, features_to_use = My_fea
 print("✅step4--特征工程完成")
 
 #检验特征相关性
-plot_feature_correlation(df_cleaned_features)
+plot_feature_correlation(df_cleaned_features, features = My_features)
 vif_result = check_multicollinearity(df_cleaned_features, threshold=5)
 print("✅step5--特征检验完成")
 
