@@ -141,8 +141,7 @@ def balcony_rank(df):
         # 2. 拆分训练数据 & 待预测数据
     df_known = df[df["balcony_rank"].notna()]
     df_missing = df[df["balcony_rank"].isna()]
-    return df
-
+    
     if not df_missing.empty:
         # 3. 用你已有的变量作为特征
         features = [

@@ -2,6 +2,8 @@ import os
 import sys
 import pandas as pd
 from features_wlh.features_wlh import add_selected_features
+from features_wlh.feature_analysis import plot_feature_correlation
+from features_wlh.feature_vif_validation import check_multicollinearity
 from utils.path_helper import get_data_path
 from pipline.pipline import pipeline_house_data
 from model.evaluate import evaluate_model
@@ -28,7 +30,7 @@ print("✅step1--录入特征值完成")
 
 #读取数据
 df = pd.read_csv(get_data_path("house_prices.csv"))
-print("✅step--2读取数据完成")
+print("✅step2--读取数据完成")
 
 #清洗数据
 df_cleaned = pipeline_house_data(df, keywords=KEYWORDS) 
@@ -38,10 +40,15 @@ print("✅step3--数据清洗完成, shape:", df_cleaned.shape)
 df_cleaned_features = add_selected_features(df_cleaned, features_to_use = My_features) 
 print("✅step4--特征工程完成")
 
+#检验特征相关性
+plot_feature_correlation(df_cleaned_features)
+vif_result = check_multicollinearity(df_cleaned_features, threshold=5)
+print("✅step5--特征检验完成")
+
 #训练模型   ##模型参数进入train_model.py去调  填写features_to_use
 after_trained_model, X_test, y_test = train_model(df_cleaned_features, df_cleaned, features_to_use = My_features) 
-print("✅step5--完成训练")
+print("✅step6--完成训练")
 
 #评估模型
 evaluate_model(after_trained_model, X_test, y_test)
-print("✅step6--完成评估")
+print("✅step7--完成评估")
