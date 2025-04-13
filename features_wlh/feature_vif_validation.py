@@ -2,7 +2,7 @@ import pandas as pd
 import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-def check_multicollinearity(df, threshold=10):
+def check_multicollinearity(df, features=None, threshold=10):
     """
     检查 DataFrame 中数值型变量的多重共线性（使用 VIF 指标）
 
@@ -13,6 +13,9 @@ def check_multicollinearity(df, threshold=10):
     返回:
     vif_df : pd.DataFrame —— 每个变量对应的 VIF 值
     """
+    if features:
+        df = df[features] # 只保留指定值
+
     # 只保留数值型变量
     numeric_df = df.select_dtypes(include=["number"]).dropna()
     

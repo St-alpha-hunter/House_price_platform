@@ -26,7 +26,7 @@ My_features =  ["Bathroom","Furnishing_giving","floor_level_normalize","has_amen
                                     "has_green_space","has_proximity","is_affordable","is_basement","is_deal",
                                     "is_gated","is_ground","is_luxury","is_marketing_strong","is_new","is_prime_location",
                                     "is_resale","is_spacious","is_well_planned","location_rank","max_floor","normal_Carpet_Area",
-                                    "normal_price","ownership_score", "area_price_index","floor_area_combo","location_comfort_combo", #有点用但不多
+                                    "normal_price","ownership_score","floor_area_combo","location_comfort_combo", #有点用但不多
                                     "location_ownership_combo", "facing_height_combo", "area_furnishing_combo"]
 print("✅step1--录入特征值完成")
 
