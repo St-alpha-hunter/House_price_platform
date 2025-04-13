@@ -47,20 +47,25 @@ def std_price(df):
 def normal_price(df):
     df_train = df[df["Price (in rupees)"].notna()]
     df_missing = df[df["Price (in rupees)"].isna()]
-    # 可选特征（你可以换掉）
+
     features = [
         "Carpet Area", "floor_level", "max_floor", "location_encoded",
         "is_affordable", "is_luxury", "has_amenities"
     ]
-    X = df_train[features]
-    y = df_train["Price (in rupees)"]
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X, y)
-    df.loc[df["Price (in rupees)"].isna(), "Price (in rupees)"] = model.predict(df_missing[features])
 
-    df["normal_price"] = (df["Price (in rupees)"] - df["Price (in rupees)"].mean())/(df["Price (in rupees)"].max() - df["Price (in rupees)"].min())
+    if not df_missing.empty and not df_missing[features].empty:
+        X = df_train[features]
+        y = df_train["Price (in rupees)"]
+        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model.fit(X, y)
+        df.loc[df["Price (in rupees)"].isna(), "Price (in rupees)"] = model.predict(df_missing[features])
+
+    # 正常归一化
+    df["normal_price"] = (df["Price (in rupees)"] - df["Price (in rupees)"].mean()) / (
+        df["Price (in rupees)"].max() - df["Price (in rupees)"].min()
+    )
+
     return df
-
 #f3
 @register_feature("std_Carpet_Area")
 def std_Carpet_Area(df):
@@ -342,6 +347,119 @@ def max_floor_normalize(df):
 def ownership_score(df):
     df["ownership_score"] = df ["ownership_score"]
     return df
+
+# 41 是否低于本地中位价
+@register_feature("is_undervalued")
+def is_undervalued(df):
+    df["median_price_per_location"] = df.groupby("location_encoded")["Amount_clean"].transform("median")
+    df["is_undervalued"] = (df["Amount_clean"] < df["median_price_per_location"]).astype(int)
+    df = df.drop(columns=["median_price_per_location"])
+    return df
+
+# 42 房源是否属于“大户型”
+@register_feature("is_large_house")
+def is_large_house(df):
+    df["is_large_house"] = (df["Carpet Area"] > 1500).astype(int)
+    return df
+
+# 43 房子是否有多个卫生间
+@register_feature("is_multi_bathroom")
+def is_multi_bathroom(df):
+    df["is_multi_bathroom"] = (df["Bathroom"] >= 2).astype(int)
+    return df
+# 44 是否位于热门地段
+@register_feature("is_popular_location")
+def is_popular_location(df):
+    median_freq = df["location_encoded"].median()
+    df["is_popular_location"] = (df["location_encoded"] >= median_freq).astype(int)
+    return df
+
+# 46 楼层高度与房屋面积交叉,捕捉“高层 + 大面积”倾向于更高价值的潜在规律
+@register_feature("floor_area_combo")
+def floor_area_combo(df):
+    if "floor_level" in df.columns and "Carpet Area" in df.columns:
+        df["floor_area_combo"] = df["floor_level"] * df["Carpet Area"]
+    else:
+        df["floor_area_combo"] = 0  # 或者 raise error
+    return df
+
+# 47 高地段 + 绿化 + 配套完善，意味着 稀缺性 +居住价值更高，特别适合家庭购房需求
+@register_feature("location_comfort_combo")
+def location_comfort_combo(df):
+    if all(col in df.columns for col in ["location_level", "has_amenities", "has_green_space", "is_gated"]):
+        df["location_comfort_combo"] = df["location_level"] * (
+            df["has_amenities"] + df["has_green_space"] + df["is_gated"]
+        )
+    else:
+        df["location_comfort_combo"] = 0
+    return df
+
+@register_feature("location_encoded")
+def location_encoded(df):
+    if "location" not in df:
+        print("⚠️ 缺少 location 字段，跳过 location_encoded")
+        return df
+    freq_map = df["location"].value_counts().to_dict()
+    df["location_encoded"] = df["location"].map(freq_map)
+    return df
+
+@register_feature("col_facing_score")
+def col_facing_score(df):
+    mapping = {
+        'East': 4, 'North': 3, 'North - East': 4, 'North - West': 2,
+        'South': 0, 'West': 1, 'South - West': 0, 'South - East': 2
+    }
+    if "facing" not in df:
+        print("⚠️ 缺少 facing 字段，跳过 col_facing_score")
+        return df
+    df["col_facing_score"] = df["facing"].map(mapping).fillna(-1)
+    return df
+
+@register_feature("relative_height")
+def relative_height(df):
+    if "floor_level" not in df or "max_floor" not in df:
+        print("⚠️ 缺少 floor_level 或 max_floor，跳过 relative_height")
+        return df
+    df["relative_height"] = df["floor_level"] / df["max_floor"].replace(0, 1)
+    return df
+
+
+# 48 楼层 + 朝向组合
+@register_feature("floor_facing_score")
+def floor_facing_score(df):
+    if "col_facing_score" not in df or "relative_height" not in df:
+        print("⚠️ 缺少 col_facing_score 或 relative_height，跳过 floor_facing_score")
+        return df
+    df["floor_facing_score"] = df["col_facing_score"] * df["relative_height"]
+    return df
+
+# 49
+@register_feature("location_ownership_combo")
+def location_ownership_combo(df):
+    if "location_encoded" in df.columns and "ownership_score" in df.columns:
+        df["location_ownership_combo"] = df["location_encoded"] * df["ownership_score"]
+    else:
+        print("⚠️ 缺少 location_encoded 或 ownership_score，跳过 location_ownership_combo")
+    return df
+
+# 50
+@register_feature("facing_height_combo")
+def facing_height_combo(df):
+    if "col_facing_score" in df.columns and "relative_height" in df.columns:
+        df["facing_height_combo"] = df["col_facing_score"] * df["relative_height"]
+    else:
+        print("⚠️ 缺少 col_facing_score 或 relative_height，跳过 facing_height_combo")
+    return df
+
+# 51
+@register_feature("area_furnishing_combo")
+def area_furnishing_combo(df):
+    if "Carpet Area" in df.columns and "Furnishing_giving" in df.columns:
+        df["area_furnishing_combo"] = df["Carpet Area"] * df["Furnishing_giving"]
+    else:
+        print("⚠️ 缺少 Carpet Area 或 Furnishing_giving，跳过 area_furnishing_combo")
+    return df
+
 
 ##其他高级特征工程  补充的话从 39开始补充, 一些数值变量考虑对数化处理之后方便操作
 ##交叉特征或者其他办法

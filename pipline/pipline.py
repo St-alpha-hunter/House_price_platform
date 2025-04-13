@@ -352,6 +352,6 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
 
 #step-16删除完全空缺值, 辅助列
     df_cleaned = df.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
-    
+
 
     return df_cleaned
