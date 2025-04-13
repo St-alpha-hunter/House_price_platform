@@ -81,7 +81,7 @@ def normal_price(df):
 #f5
 @register_feature("Transaction_giving")
 def Transaction_giving(df):
-    map_transaction = {'New Property':2, 'Rent/Lease':1, "other":0, "resale":-1}
+    map_transaction = {'New Property':2, 'Rent/Lease':1, "Other":0, "Resale":-1}
     df["Transaction_giving"] = df["Transaction"].map(map_transaction)
     return df
 
@@ -121,7 +121,7 @@ def Status_hot(df):
     return df  
 
 #11
-@register_feature("facing_giviing")
+@register_feature("facing_giving")
 def facing_giving(df):
     df["facing_giving"] = df["col_facing_score"]
     return df
@@ -173,8 +173,8 @@ def balcony_rank(df):
 
 #15
 @register_feature("Car_Parking")
-def Car_parking(df):
-    df["Car_parking"] = df ["col_car_parking_score"]
+def Car_Parking(df):
+    df["Car_Parking"] = df ["col_car_parking_score"]
     return df
 
 #16
@@ -258,7 +258,7 @@ def is_luxury(df):
 #29
 @register_feature("society_level_hot")
 def society_level_hot(df):
-    map_hot = {'0':4, '1':3, '2':2, '3':1, '4':0}
+    map_hot = {0:4, 1:3, 2:2, 3:1, 4:0}
     df["society_level_hot"] = df["society_level"].map(map_hot)
     return df
 
