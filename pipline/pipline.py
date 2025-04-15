@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
 import random
 
 def pipeline_house_data(df,keywords,col_Title = "Title",
@@ -321,7 +322,7 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
 #step15-处理好Amount
     # 解释： \d[\d.,]* 匹配数字部分，([a-zA-Z]+) 捕获后缀
     #suffixes = amount_series.str.extract(r'[\d,\.]+\s*([a-zA-Z]+)?')[0].fillna('No Unit')
-    # 9684个是竞价交易，所以剔除这些数据
+
     def convert_amount_to_rupiah(text):
         try:
             text = str(text).lower().replace(',', '').strip()
@@ -344,14 +345,71 @@ def pipeline_house_data(df,keywords,col_Title = "Title",
             return np.nan  # 没匹配成功
         except:
             return np.nan
+
+
+
+
     df['Amount_clean'] = df['Amount(in rupees)'].apply(convert_amount_to_rupiah)
-    # 9684个是竞价交易，所以剔除这些数
-    df = df[df['Amount(in rupees)'] != 'Call for Price'].copy()
+    #剔除缺失值
+    df_cleaned = df[df['Amount_clean'].notnull()].copy()
+    #剔除离谱值
+    df_cleaned = df_cleaned[(df_cleaned['Amount_clean'] >= 1_000_000) & (df_cleaned['Amount_clean'] <= 200_000_000)].copy()
+    #展示没对数化的分布
+    print("Amount_clean分布")
+    plot_amount_distribution(df_cleaned)
+    #对Amount_clean进行对数化
+    df_cleaned['Amount_clean'] = np.log1p(df_cleaned['Amount_clean'])
+    print("对数化后的Amount_clean分布")
+    plot_amount_distribution(df_cleaned)
+    #q99 = df['Amount_clean'].quantile(0.99)
+    #q1 = df['Amount_clean'].quantile(0.01)
+    #df = df[df['Amount_clean'] < q99]
+    #df = df[df['Amount_clean'] > q1]
 
-    
+    #step-16删除完全空缺值, 辅助列
+    df_cleaned = df_cleaned.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
 
-#step-16删除完全空缺值, 辅助列
-    df_cleaned = df.drop(columns = ["Amount(in rupees)","Dimensions","Plot Area","Title","Description","Floor","Super Area", "Car Parking", "Ownership", "Bathroom", "location"])
-
+    #df_cleaned= clip_extreme_values(df_cleaned)暂时弃用，改用winsorize
+    df_cleaned = winsorize_data(df_cleaned, lower_limit= 0.005, upper_limit= 0.995,skip_cols=None)
 
     return df_cleaned
+
+
+
+
+
+##去除数值型特征值的前1%和后1%
+def clip_extreme_values(df, quantile_low=0.01, quantile_high=0.99):
+    numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
+    for col in numeric_cols:
+        q_low = df[col].quantile(quantile_low)
+        q_high = df[col].quantile(quantile_high)
+        df = df[(df[col] >= q_low) & (df[col] <= q_high)]
+        print(f"✅ 已处理异常值：{col}，保留范围 [{q_low:.2f}, {q_high:.2f}]")
+    return df.reset_index(drop=True)
+
+##温莎化
+def winsorize_data(df_cleaned, lower_limit= 0.005, upper_limit= 0.995,skip_cols=None):
+    numeric_cols = df_cleaned.select_dtypes(include=["int64", "float64"]).columns
+    if  skip_cols is None:
+        skip_cols = ['Amount_clean'] 
+    for col in numeric_cols:
+        if col in skip_cols:
+            continue  
+        lower_value = np.percentile(df_cleaned[col], lower_limit * 100)
+        upper_value = np.percentile(df_cleaned[col], upper_limit * 100)
+        df_cleaned[col] = np.where(df_cleaned[col] < lower_value, lower_value, df_cleaned[col])
+        df_cleaned[col] = np.where(df_cleaned[col] > upper_value, upper_value, df_cleaned[col])
+
+    return df_cleaned
+
+
+def plot_amount_distribution(df, column='Amount_clean', bins=50):
+    plt.figure(figsize=(8, 5))
+    plt.hist(df[column], bins=bins, color='skyblue', edgecolor='black')
+    plt.title(f"Distribution of {column}")
+    plt.xlabel(column)
+    plt.ylabel("Frequency")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

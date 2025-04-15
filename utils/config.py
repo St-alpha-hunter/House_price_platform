@@ -50,3 +50,25 @@ KEYWORDS = {
 
 RANDOM_SEED = 42
 RATIO_RANGE = (0.75, 0.88)
+
+# ========================
+# 模型参数
+# ========================
+# config.py
+model_configs = {
+    "RandomForestRegressor": {
+
+    },
+
+    "XGBRegressor": {
+
+    },
+
+    "LGBMRegressor":{
+
+    },
+
+    "CatBoostRegressor":{
+
+    }
+}

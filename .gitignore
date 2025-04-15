@@ -13,5 +13,10 @@ venv/
 .env/
 __pycache__/
 
-
+#不提交清洗数据
 data/house_prices.csv
+data/processed_data/house_prices_clean.csv
+
+
+#不提交模型
+models_saved/
