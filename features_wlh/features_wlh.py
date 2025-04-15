@@ -129,8 +129,10 @@ def facing_giving(df):
 #12
 @register_feature("facing_hot")
 def facing_hot(df):
-    df["facing_hot"] = pd.get_dummies(df["col_facing_score"], prefix="col_facing_score")
+    dummies = pd.get_dummies(df["col_facing_score"], prefix="col_facing_score")
+    df = pd.concat([df, dummies], axis=1)
     return df
+
 
 #13
 @register_feature("Bathroom")
@@ -365,8 +367,10 @@ def is_large_house(df):
 # 43 房子是否有多个卫生间
 @register_feature("is_multi_bathroom")
 def is_multi_bathroom(df):
+    df = FEATURE_FUNCTIONS["Bathroom"](df)
     df["is_multi_bathroom"] = (df["Bathroom"] >= 2).astype(int)
     return df
+
 # 44 是否位于热门地段
 @register_feature("is_popular_location")
 def is_popular_location(df):
@@ -460,10 +464,61 @@ def area_furnishing_combo(df):
         print("⚠️ 缺少 Carpet Area 或 Furnishing_giving，跳过 area_furnishing_combo")
     return df
 
+#52
+@register_feature("quality_score")
+def quality_score(df):
+    cols = [
+        "has_amenities", "has_green_space", "has_proximity",
+        "is_affordable", "is_luxury", "is_marketing_strong",
+        "is_prime_location", "is_resale", "is_spacious", "is_well_planned"
+    ]
+    df["quality_score"] = df[cols].sum(axis=1)
+    return df
+
+
+#53
+@register_feature("quality_score")
+def quality_score(df):
+    cols = [
+        "has_amenities", "has_green_space", "has_proximity",
+        "is_affordable", "is_luxury", "is_marketing_strong",
+        "is_prime_location", "is_resale", "is_spacious", "is_well_planned"
+    ]
+    df["quality_score"] = df[cols].sum(axis=1)
+    return df
+
+#54
+@register_feature("super_premium_flag")
+def super_premium_flag(df):
+    cols = [
+        "has_amenities", "has_green_space", "has_proximity",
+        "is_affordable", "is_luxury", "is_marketing_strong",
+        "is_prime_location", "is_resale", "is_spacious", "is_well_planned"
+    ]
+    df["super_premium_flag"] = df[cols].prod(axis=1)  # 连乘
+    return df
+
+#55
+@register_feature("log_price")
+def log_price(df):
+    df_train = df[df["Price (in rupees)"].notna()]
+    df_missing = df[df["Price (in rupees)"].isna()]
+    # 可选特征（你可以换掉）
+    features = [
+        "Carpet Area", "floor_level", "max_floor", "location_encoded",
+        "is_affordable", "is_luxury", "has_amenities"
+    ]
+    X = df_train[features]
+    y = df_train["Price (in rupees)"]
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
+    df.loc[df["Price (in rupees)"].isna(), "Price (in rupees)"] = model.predict(df_missing[features])
+    df['log_price'] = np.log1p(df['Price (in rupees)'])
+    return df
 
 ##其他高级特征工程  补充的话从 39开始补充, 一些数值变量考虑对数化处理之后方便操作
 ##交叉特征或者其他办法
-
+##df = FEATURE_FUNCTIONS["想继承已经生成的变量"](df)
 
 def add_selected_features(df, features_to_use = None):
     if features_to_use is None:
