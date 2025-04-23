@@ -55,20 +55,27 @@ RATIO_RANGE = (0.75, 0.88)
 # 模型参数
 # ========================
 # config.py
+# config.py
 model_configs = {
     "RandomForestRegressor": {
-
+        "max_depth": None,
+        "min_samples_split": 2,
+        "n_estimators": 200
     },
-
+    
     "XGBRegressor": {
-
+        # 可添加参数，比如：
+        # "n_estimators": 100,
+        # "learning_rate": 0.1,
     },
 
-    "LGBMRegressor":{
-
+    "LGBMRegressor": {
+        # "num_leaves": 31,
+        # "n_estimators": 100,
     },
 
-    "CatBoostRegressor":{
-
+    "CatBoostRegressor": {
+        # "depth": 6,
+        # "iterations": 200,
     }
 }

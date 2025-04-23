@@ -47,13 +47,14 @@ My_features =  [
     "is_ground",
     "quality_score",
     "location_rank",
-    "max_floor",
+    "floor_level_normalize",
     "ownership_score",
     "relative_height",
     "society_level_hot", 
     "std_Carpet_Area",
     "facing_giving",
     "Status_giving",
+    "ownership_score",
     "is_multi_bathroom",
     "is_popular_location",
     "floor_area_combo",
@@ -115,7 +116,7 @@ print("✅step4(6)---特征值和目标变量的相关性")
 print("特征工程结束，开始训练模型")
 
 #训练模型   ##模型参数进入train_model.py去调  填写features_to_use
-after_trained_model, X_test, y_test = train_model(df_cleaned_features, df_cleaned, features_to_use = My_features)
+after_trained_model, X_test, y_test, X_train, y_trai = train_model(df_cleaned_features, df_cleaned, features_to_use = My_features)
 print("✅step5--完成训练")
 
 #评估模型
@@ -196,4 +197,4 @@ report_dir = os.path.join(project_root, "report")
 os.makedirs(report_dir, exist_ok=True)
 report_save_path = os.path.join(report_dir, "report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
 
-print("✅ step9 - 训练报告已自动生成")
+print("✅ step9 - 训练报告已自动生成", report_save_path)

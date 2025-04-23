@@ -41,4 +41,4 @@ def train_model(df_cleaned_features, df_cleaned, target_col="Amount_clean", mode
     joblib.dump(after_trained_model, model_path)
     print("✅ 模型训练完成，保存到：", model_path)
     
-    return after_trained_model, X_test, y_test
+    return after_trained_model, X_test, y_test, X_train, y_train
