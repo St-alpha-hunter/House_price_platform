@@ -30,7 +30,10 @@ def feature_selection_by_k(features, target_col, max_k=20, rank_features=10, mod
         results.append((k, top_k_features.tolist()))
 
     results_df = pd.DataFrame(results, columns=["num_features", "top_features"])
-    return results_df
+    model_name_str = model_cls.__name__
+    model_cls_used = model_cls
+
+    return results_df, model_name_str, model_cls_used
 
 
 def select_final_top_features(features, target_col, max_k=20, top_k=15, model_cls=RandomForestRegressor):
@@ -51,5 +54,5 @@ def select_final_top_features(features, target_col, max_k=20, top_k=15, model_cl
     top_idx = np.argsort(importances)[::-1][:top_k]
     top_features = X_filtered_df.columns[top_idx]
     top_features = top_features.tolist()
-
+  
     return top_features

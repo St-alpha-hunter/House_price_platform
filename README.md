@@ -81,6 +81,11 @@ The project was developed and tested in the following environment:
 
 4.python main.py
 
+###### Instruction Manual ######
+1. The platform have two parts of training.  The experiment procedure in notebook called platform E, the informal procedure in main.py called Platform A
+2. platform E is more convenient and flexible. Although we set some solid parts in notebook to assist you, you can try Exploratory Data Analysis.
+3. After you fininsh your training in platform E and get the best params, you should record the best params in config.py
+4. After that you can run platform A (Hint: the features and model, you choose in E and A must be the same),the report and model can be recorded automatically.
 
 ###### To Do ######
 1. do some front-end development (using steamlit)

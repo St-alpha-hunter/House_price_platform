@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-
 class FeatureDeepAnalysis:
     def __init__(self,df,features=None,model_cls=None,target_col="Amount_clean"):
         self.df = df
@@ -16,7 +15,7 @@ class FeatureDeepAnalysis:
         self.model_cls = model_cls
         self.target_col = target_col
 
-    ##分析特征值重要性
+     ##分析特征值重要性
     def plot_feature_importance(self):
         if self.model_cls == XGBRegressor:
            model = XGBRegressor(n_estimators=100, random_state=42)
@@ -52,7 +51,7 @@ class FeatureDeepAnalysis:
             plt.title("Top 15 Feature Importance (Random Forest)")
             plt.show()
 
-    #一键画图
+     #一键画图
     def plot_feature_distribution(self):
         for col in self.features:
             plt.figure(figsize=(6, 3))
@@ -64,9 +63,6 @@ class FeatureDeepAnalysis:
             plt.tight_layout()
             plt.show()
             
-
-
-
     #和目标的相关性
     def plot_feature_vs_target(self):
         for col in self.features:

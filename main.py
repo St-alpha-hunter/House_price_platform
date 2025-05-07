@@ -6,6 +6,7 @@ import numpy as np
 import tabulate as tb
 
 from utils.config import KEYWORDS
+from utils.config import model_configs
 from utils.path_helper import get_data_path
 from pipline.pipline import pipeline_house_data
 
@@ -48,7 +49,6 @@ My_features =  [
     "quality_score",
     "location_rank",
     "floor_level_normalize",
-    "ownership_score",
     "relative_height",
     "society_level_hot", 
     "std_Carpet_Area",
@@ -88,9 +88,9 @@ df_cleaned_features = add_selected_features(df_cleaned, features_to_use = My_fea
 print("✅step4--特征值导入完成")
 
 # 分析每个特征数下的最优组合
-df_result = feature_selection_by_k(df_cleaned[My_features], target_col = df_cleaned["Amount_clean"], max_k=20, rank_features=10, model_cls = RandomForestRegressor)
+df_result, model_name_str, model_cls_used = feature_selection_by_k(df_cleaned[My_features], target_col = df_cleaned["Amount_clean"], max_k=20, rank_features=10, model_cls = LGBMRegressor)
 # 直接选出最终最重要的15个特征
-top_features = select_final_top_features(df_cleaned[My_features], target_col = df_cleaned["Amount_clean"], max_k=20, top_k=15, model_cls = RandomForestRegressor)
+top_features = select_final_top_features(df_cleaned[My_features], target_col = df_cleaned["Amount_clean"], max_k=20, top_k=15, model_cls = model_cls_used)
 print("✅step4(1)---特征值筛选完成")
 
 #特征向量相关性 + 自动剔除高相关
@@ -102,7 +102,7 @@ advanced_features_ultimate = check_multicollinearity(df_cleaned_features, featur
 print("✅step4(3)---VIF检验")
 
 #特征值重要性排序
-deep_analysis = FeatureDeepAnalysis(df_cleaned,features=advanced_features_ultimate,model_cls=RandomForestRegressor,target_col="Amount_clean")
+deep_analysis = FeatureDeepAnalysis(df_cleaned,features=advanced_features_ultimate, model_cls = model_cls_used, target_col="Amount_clean")
 deep_analysis.plot_feature_importance()
 print("✅step4(4)---特征值重要性排序")
 
@@ -116,13 +116,15 @@ print("✅step4(6)---特征值和目标变量的相关性")
 print("特征工程结束，开始训练模型")
 
 #训练模型   ##模型参数进入train_model.py去调  填写features_to_use
-after_trained_model, X_test, y_test, X_train, y_trai = train_model(df_cleaned_features, df_cleaned, features_to_use = My_features)
+after_trained_model, X_test, y_test, X_train, y_trai = train_model(df_cleaned_features, df_cleaned, features_to_use = My_features, model_cls = model_cls_used)
 print("✅step5--完成训练")
 
 #评估模型
 evaluate_model(after_trained_model, X_test, y_test)
+
 #交叉检验
-df_cross_evaulation = enhanced_cross_validate(model = RandomForestRegressor(),
+params = model_configs[model_name_str]
+df_cross_evaulation = enhanced_cross_validate(model = model_cls_used(**params),
                                                features = df_cleaned[advanced_features_ultimate], 
                                                target_col=df_cleaned["Amount_clean"].values, 
                                                return_df=True)
@@ -150,21 +152,21 @@ from datetime import datetime
 report_lines = []
 
 # 报告头部
-report_lines.append("# 模型训练报告")
-report_lines.append(f" 日期：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+report_lines.append("# 模型训练报告 Model_training_report")
+report_lines.append(f" 日期(date)：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 report_lines.append("---\n")
 
 # 使用的特征列表
-report_lines.append(" 最终使用的特征（通过多轮筛选 + 去除共线性）")
+report_lines.append(" 最终使用的特征（通过多轮筛选 + 去除共线性）the features we choosed")
 for i, feat in enumerate(advanced_features_ultimate, 1):
     report_lines.append(f"{i}. {feat}")
 report_lines.append("")
 
 # 模型评估
 score = after_trained_model.score(X_test, y_test)
-report_lines.append("## 模型评估结果")
+report_lines.append("## 模型评估结果 model evalution")
 report_lines.append(f"- R² 分数（score）: `{score:.4f}`")
-report_lines.append(f"- 交叉检验结果:")
+report_lines.append(f"- 交叉检验结果 cross-validation:")
 from tabulate import tabulate
 markdown_table = tabulate(df_cross_evaulation, headers='keys', tablefmt='github', showindex=False)
 report_lines.append(markdown_table)
@@ -176,25 +178,26 @@ report_lines.append(markdown_table)
 report_lines.append("")
 
 # 模型参数
-report_lines.append("## 模型类型")
-report_lines.append(f"- 使用模型：`{type(after_trained_model).__name__}`")
+report_lines.append("## 模型类型 model type")
+report_lines.append(f"- 使用模型(model we used)：`{type(after_trained_model).__name__}`")
+report_lines.append(f"- Best params(model we used)：`{params}`")
 
 # 输出保存信息
-report_lines.append("\n## 模型已保存路径")
+report_lines.append("\n## 模型已保存路径 saved_path")
 report_lines.append("- `models_saved/my_model.pkl`")
 
 report_lines.append("\n---")
-report_lines.append("*报告由自动脚本生成。*")
+report_lines.append("*报告由自动脚本生成。Report has been made successfully*")
 
 # ==== 写入文件 ====
-with open("model_report.md", "w", encoding="utf-8") as f:
-    f.write("\n".join(report_lines))
-
 
 #保存文件
 project_root = os.path.abspath(os.path.dirname(__file__))  # 当前文件所在目录
 report_dir = os.path.join(project_root, "report")
 os.makedirs(report_dir, exist_ok=True)
-report_save_path = os.path.join(report_dir, "report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
+report_save_path = os.path.join(report_dir, f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
+
+with open(report_save_path, "w", encoding="utf-8") as f:
+    f.write("\n".join(report_lines))
 
 print("✅ step9 - 训练报告已自动生成", report_save_path)
