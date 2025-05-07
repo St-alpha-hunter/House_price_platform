@@ -11,52 +11,39 @@ the models users can use on the platform by now:
 - CatBoostRegressor
 
 
-###### PROJECT STRUCTURE ######
+
+## PROJECT STRUCTURE ##
+
+```
 HOUSE_PRICE_PLATFORM/
-│
-├── advanced_modify/              # 高级功能模块
-│   ├── cross_validation.py       # 多指标交叉验证工具
-│   ├── grid_search_tool.py       # 网格搜索模块   please waiting
-│   ├── pca_transformer.py        # PCA 降维模块   please waiting
-│
+├── advanced_modify/           # 高级功能模块 / advanced features
+│   ├── cross_validation.py    # 多指标交叉验证工具 / cross-validation tools
+│   └── grid_search_tool.py    # 网格搜索模块 / grid search module (pending)
 ├── dashboard/
-│   └── powerbi_dashboard.pbix    # PowerBI 可视化文件  please waiting
-│
-├── data/                         # 原始 & 处理后数据
-│   ├── house_prices.csv
-│   └── processed_data/
-│       └── house_prices_cleaned.csv
-│
-├── features_wlh/                 # 特征工程模块 
+│   └── powerbi_dashboard.pbix # PowerBI 可视化文件 / PowerBI dashboard (pending)
+├── data/                      # 原始 & 处理后数据 / raw & processed data
+│   └── house_prices_cleaned.csv
+├── features_wlh/              # 特征工程模块 / feature engineering
 │   ├── feature_analysis.py
 │   ├── feature_selector.py
-│   ├── feature_vif_validation.py
-│   ├── FeatureDeepAnalysis.py
-│   └── features_wlh.py
-│
-├── model/                        # 模型相关逻辑
-│   ├── evaluate.py               # 模型评估方法
-│   └── train_model.py            # 模型训练主函数
-│
-├── models_saved/                 # 训练好的模型保存目录
-│
+│   └── FeatureDeepAnalysis.py
+├── model/                     # 模型相关逻辑 / model logic
+│   ├── evaluate.py            # 模型评估方法 / model evaluation
+│   └── train_model.py         # 模型训练主函数 / training function
+├── models_saved/              # 训练好的模型保存目录 / saved models
 ├── notebooks/
-│   └── practice.ipynb            # 交互式实验笔记本
-│
-├── pipline/                      # 项目主流程模块
-│   └── pipline.py
-│
-├── report/                       # 报告生成模块（可扩展）
-│
-├── utils/                        # 工具包
-│   ├── config.py                 # 模型参数配置中心
-│   ├── features_name.text        # 特征名称列表
-│   └── path_helper.py            # 路径工具
-│
-├── main.py                       # 主程序入口
-├── README.md                     # 项目说明文档
-├── requirement.txt               # 环境依赖列表
-└── .gitignore                    # Git 忽略规则
+│   └── practice.ipynb         # 交互式实验笔记本 / experiment notebook
+├── pipeline/                  # 项目主流程模块 / main pipeline module
+├── report/                    # 报告生成模块 / report generator (extendable)
+├── utils/                     # 工具包 / utility functions
+│   ├── config.py              # 模型参数配置中心 / model config center
+│   ├── features_name.text     # 特征名称列表 / feature name list
+│   └── path_helper.py         # 路径工具 / path helper
+├── main.py                    # 主程序入口 / project entry point
+├── README.md                  # 项目说明文档 / project instructions
+├── requirement.txt            # 环境依赖列表 / environment requirements
+└── .gitignore                 # Git 忽略规则 / git ignore rules
+```
 
 
 
